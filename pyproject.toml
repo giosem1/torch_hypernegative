@@ -1,10 +1,12 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = [
+    "setuptools>=42"
+]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "hyperlink_prediction"
-verion = "0.1"
+version = "0.1"
 authors = [
     {name = "Giovanni Semioli", email = "g.semioli1@studenti.unisa.it"}
 ]
