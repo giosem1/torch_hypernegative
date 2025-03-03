@@ -1,10 +1,9 @@
 import gdown
 import tarfile
-import pathlib
 import torch
-from data import HypergraphBaseData
+import pathlib
+from hyperlink_prediction.datasets.data import HypergraphBaseData
 from os import remove
-from torch import Tensor
 
 class ARBDataset(HypergraphBaseData): 
     """A object that save a hypergraph dataset from Google Drive and load in memory
@@ -28,15 +27,23 @@ class ARBDataset(HypergraphBaseData):
 
     def __init__(self, dataset_name: str, root: str = 'datasets'):
         self.dataset_name = dataset_name
-        self.root_path = pathlib.Path(root)
-        self.dataset_path = self.root_path / dataset_name
+        self.dataset_path = pathlib.Path(root) / dataset_name
+        
         if not self.dataset_path.exists():
             self.download()
         
         if not (self.dataset_path / "edge-index.pkl").exists():
             self.process()
+
+        edge_index = torch.load(open((self.dataset_path / "edge-index.pkl"), "rb"))
         
-        super(ARBDataset, self).__init__(dataset_name, root)
+        if not (self.dataset_path / "times-index.pkl").exists():
+            self.generate_timestamped()
+
+        time_saved = torch.load(open((self.dataset_path / "times-index.pkl"),"rb"))
+            
+        super(ARBDataset, self).__init__(dataset_name, edge_index, time_saved, root)
+        
 
     def download(self) -> None:
         """ Take the dataset from Google Drive through the name of dataset,
@@ -52,7 +59,7 @@ class ARBDataset(HypergraphBaseData):
         remove(str(self.dataset_path / "raw.tar.gz"))
 
     def process(self) -> None:
-        """ Process the file in a tensor containing two list
+        """ Process the files of the verts and the simplices in a tensor containing two list
             the first contain the nodes's id
             and the second the index of the nodes's numbers
             and then serialize the tensor 
@@ -68,31 +75,5 @@ class ARBDataset(HypergraphBaseData):
                         list[0].append(simplices)
                         list[1].append(i)
        
-        self.edge_index = torch.tensor(list)
-        torch.save(self.edge_index, open((self.dataset_path / "edge-index.pkl"), "wb"))
-
-
-class HypergraphDataset(HypergraphBaseData):
-    """ A object that load from the memory the dataset's edge_index
-
-        Args:
-            dataset_name: which indicate the name of the dataset.
-    """
-    def __init__(self, dataset_name: str):
-        ARBDataset(dataset_name)
-        super(HypergraphDataset, self).__init__(dataset_name)
-
-    def __getitem__(self, idx: int) -> Tensor:
-        """ Take a index and find in the tensor the index of the node's number
-            which is associeted at the list of nodes's id.
-
-            Args: index: the index of the node in the tensor edge_index
-            return: the tensor containing a list of nodes's id from the file which finish with '-simplices.txt'
-                    and a list of the index of the node's number.
-        """        
-        return self.edge_index[:, self.edge_index[1] == idx]             
-
-    def __len__(self) -> int:
-        """Return the number of the node in the hypergraph
-        """
-        return len(torch.unique(self.edge_index[1]))
+        edge_index = torch.tensor(list)
+        torch.save(edge_index, open((self.dataset_path / "edge-index.pkl"), "wb"))
