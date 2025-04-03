@@ -2,15 +2,15 @@ import gdown
 import tarfile
 import torch
 import pathlib
-from hyperlink_prediction.datasets.data import HypergraphBaseData
+from .data import HypergraphBaseData
 from os import remove
 
 class ARBDataset(HypergraphBaseData): 
     """A object that save a hypergraph dataset from Google Drive and load in memory
 
         Args:
-            dataset_name: which indicate the name of the dataset.
-            root: which indicate the root where the dataset will be saved.
+            dataset_name (string): The dataset's name.
+            root (string): The root where the dataset will be saved.
                  (default: 'datasets')
     """
 
@@ -56,6 +56,7 @@ class ARBDataset(HypergraphBaseData):
         gdown.download(id = ARBDataset.GDRIVE_IDs[self.dataset_name], output = str(self.dataset_path / "raw.tar.gz"))
         file = tarfile.open(str(self.dataset_path / "raw.tar.gz"))
         file.extractall(self.dataset_path / "../")
+        file.close()
         remove(str(self.dataset_path / "raw.tar.gz"))
 
     def process(self) -> None:

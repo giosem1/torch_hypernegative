@@ -9,9 +9,12 @@ class HypergraphBaseData(ABC, Dataset):
     """ A class which obtains the the edge_index and time_saved from a dataset
 
         Args:
-            dataset_name: which indicate the name of the dataset
-            root: which indicate the folder where are saved the dataset
-                (default: 'datasets')
+            dataset_name (string): The dataset's name.
+            edge_index (Tensor): A tensor where are saved the node's id.
+            time_saved (Tensor): A tensor where are saved the timestamp.
+            nvert_attribute (Tensor): A tensor where are saved the node's attribute.
+            root (string, optional): The folder's name where the dataset will be saved.
+                 (default: 'datasets')
     """
 
     def __init__(self, dataset_name: str, edge_index: Tensor, time_saved: Tensor, nverts_attribute: Tensor, root: str = 'datasets' ):
@@ -39,8 +42,9 @@ class HypergraphBaseData(ABC, Dataset):
         """ Take a index and find in the tensor the index of the node's number
             which is associeted at the list of nodes's id.
 
-            Args: index: the index of the node in the tensor edge_index
-            return: the tuple containing as first element a tensor which contains a list of nodes's id 
+            Args: 
+                index (int): the index of the node in the tensor edge_index
+                return: the tuple containing as first element a tensor which contains a list of nodes's id 
                     from the file which finish with '-simplices.txt'
                     and a list of the index of the node's number,
                     and as second element the time which is contained in the list of the time_stampded.
